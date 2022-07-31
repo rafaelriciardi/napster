@@ -116,6 +116,34 @@ public class Server {
                     System.out.println("Server Response - LEAVE_OK");
                 }
 
+                if (message.request.equals("SEARCH")){
+                    System.out.println("Client Request - SEARCH");
+                    
+                    String targetFile = message.text;
+
+                    Set<String> peersSet = peersInfo.get(targetFile);
+
+                    List<String> peersWithfile = new ArrayList<String>();
+                    if (peersSet != null)
+                        peersWithfile.addAll(peersSet);
+
+                    System.out.println(peersWithfile);
+
+                    Message search_response = new Message();
+                    search_response.request = "SEARCH_OK";
+                    search_response.peerList = peersWithfile;
+
+                    
+                    System.out.println(gson.toJson(search_response));
+
+                    sendBuf = gson.toJson(search_response).getBytes();
+
+                    DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, IPAddress, port);
+
+                    serverSocket.send(sendPacket);
+                    System.out.println("Server Response - LEAVE_OK");
+                }
+
 
             }
 

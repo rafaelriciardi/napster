@@ -19,7 +19,7 @@ public class Peer {
 
         Scanner input = new Scanner(System.in);
         int selected_option = 0;
-        int[] valid_options = {1};
+
         do{
             System.out.println("Bem vindo ao menu do Napster. Selecione o numero abaixo correspondente a opcao desejada:");
             System.out.println("1 - JOIN");
@@ -46,12 +46,27 @@ public class Peer {
                 Message leave_request = new Message();
                 leave_request.request = "LEAVE";
 
+
                 sendServer(gson.toJson(leave_request));
             }
+            
 
-            if (Arrays.asList(valid_options).contains(selected_option)) {
-                System.out.println("Opcao invalida. Por favor, seleciona uma das opcoes disponiveis no menu");
+            //Selecionou SEARCH
+            if(selected_option == 3){
+
+                System.out.println("Qual o nome do arquivo que deseja buscar?");
+
+                Message search_request = new Message();
+                search_request.request = "SEARCH";
+                search_request.text = input.next();
+
+                sendServer(gson.toJson(search_request));
             }
+
+            else {
+                System.out.println("Opcao invalida. Por favor, digite o numero correspondente a uma das opcoes disponiveis no menu");
+            }
+
 
         } while (selected_option != 0);
     }
@@ -86,6 +101,7 @@ public class Peer {
         Message serverResponse = gson.fromJson(jsonResponse, Message.class);
         System.out.println("From server: " + serverResponse.request);
         System.out.println("From server: " + serverResponse.text);
+        System.out.println("From server: " + serverResponse.peerList);
 
         client.close();
     }
