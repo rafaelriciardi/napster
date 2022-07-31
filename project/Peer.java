@@ -10,8 +10,12 @@ import java.util.Scanner;
 
 import com.google.gson.Gson;
 
+
 public class Peer {
     public static void main (String[] args) throws Exception{
+
+        String filesPath = "/home/rafael-ubuntu/napster/peer_data";
+        Gson gson = new Gson();
 
         Scanner input = new Scanner(System.in);
         int selected_option = 0;
@@ -27,19 +31,22 @@ public class Peer {
             
             //Selecionou JOIN
             if(selected_option == 1){
-                String[] files = listFiles("/home/rafael-ubuntu/napster/peer_data");
-
-                for (String file : files) {
-                    System.out.println(file);
-                    sendServer(file);
-                }
+                String[] files = listFiles(filesPath);
 
                 Message join_request = new Message();
                 join_request.request = "JOIN";
                 join_request.files = files;
 
-                Gson gson = new Gson();
                 sendServer(gson.toJson(join_request));
+            }
+
+            //Selecionou LEAVE
+            if(selected_option == 2){
+
+                Message leave_request = new Message();
+                leave_request.request = "LEAVE";
+
+                sendServer(gson.toJson(leave_request));
             }
 
             if (Arrays.asList(valid_options).contains(selected_option)) {
@@ -59,8 +66,10 @@ public class Peer {
     }
 
     public static void sendServer(String message) throws IOException{
-        DatagramSocket client = new DatagramSocket();
+        int peerPort = 8765;
+        DatagramSocket client = new DatagramSocket(peerPort);
         InetAddress IPAddress = InetAddress.getByName("127.0.0.1");
+        client.setSoTimeout(1000);
 
         byte[] sendData = new byte[1024];
         sendData = message.getBytes();
@@ -72,8 +81,11 @@ public class Peer {
         DatagramPacket recPacket = new DatagramPacket(recBuffer, recBuffer.length);
         client.receive(recPacket); //BLOCKING
 
-        String serverResponse = new String(recPacket.getData(), recPacket.getOffset(), recPacket.getLength());
-        System.out.println("From server: " + serverResponse);
+        String jsonResponse = new String(recPacket.getData(), recPacket.getOffset(), recPacket.getLength());
+        Gson gson = new Gson();
+        Message serverResponse = gson.fromJson(jsonResponse, Message.class);
+        System.out.println("From server: " + serverResponse.request);
+        System.out.println("From server: " + serverResponse.text);
 
         client.close();
     }
