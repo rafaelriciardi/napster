@@ -34,6 +34,7 @@ public class Peer {
         int selected_option = 0;
 
         do{
+            System.out.println();
             System.out.println("Bem vindo ao menu do Napster. Selecione o numero abaixo correspondente a opcao desejada:");
             System.out.println("1 - JOIN");
             System.out.println("2 - LEAVE");
@@ -56,7 +57,7 @@ public class Peer {
             }
 
             //Selecionou LEAVE
-            if(selected_option == 2){
+            else if(selected_option == 2){
 
                 Message leave_request = new Message();
                 leave_request.request = "LEAVE";
@@ -65,9 +66,8 @@ public class Peer {
                 sendServer(gson.toJson(leave_request), serverIP+":"+serverPort);
             }
             
-
             //Selecionou SEARCH
-            if(selected_option == 3){
+            else if(selected_option == 3){
 
                 System.out.println("Qual o nome do arquivo que deseja buscar?");
 
@@ -78,7 +78,8 @@ public class Peer {
                 sendServer(gson.toJson(search_request), serverIP+":"+serverPort);
             }
 
-            if(selected_option == 4){
+            //Selecionou DOWNLOAD
+            else if(selected_option == 4){
                 System.out.println("Qual o nome do arquivo que deseja baixar?");
                 String filename = input.next();
 
@@ -96,7 +97,8 @@ public class Peer {
                 }
             }
 
-            if(selected_option == 5){
+            //Selecionou ENVIAR
+            else if(selected_option == 5){
                 DatagramSocket serverSocket = new DatagramSocket(peerPort);
                 byte[] recBuffer = new byte[1024];
                 DatagramPacket recPacket = new DatagramPacket(recBuffer, recBuffer.length);
@@ -136,7 +138,7 @@ public class Peer {
                 }
             }
 
-            else {
+            else{
                 System.out.println("Opcao invalida. Por favor, digite o numero correspondente a uma das opcoes disponiveis no menu");
             }
 
@@ -182,60 +184,6 @@ public class Peer {
         client.close();
 
         return serverResponse.request;
-    }
-
-    public static void sendPeer(String message, String targetPeer) throws IOException{
-
-        String[] peerParts = targetPeer.split(":");
-        String targetPeerIP = peerParts[0];
-        Integer targetPeerPort = Integer.parseInt(peerParts[1]);
-        
-        DatagramSocket client = new DatagramSocket(peerPort);
-        InetAddress IPAddress = InetAddress.getByName(targetPeerIP);
-        client.setSoTimeout(1000);
-
-        byte[] sendData = new byte[1024];
-        sendData = message.getBytes();
-
-        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, targetPeerPort);
-        client.send(sendPacket);
-
-        byte[] recBuffer = new byte[1024];
-        DatagramPacket recPacket = new DatagramPacket(recBuffer, recBuffer.length);
-        client.receive(recPacket); //BLOCKING
-
-        String jsonResponse = new String(recPacket.getData(), recPacket.getOffset(), recPacket.getLength());
-        Gson gson = new Gson();
-        Message serverResponse = gson.fromJson(jsonResponse, Message.class);
-        System.out.println("From server: " + serverResponse.request);
-        System.out.println("From server: " + serverResponse.text);
-
-        client.close();
-    }
-
-    public static void listenToPeer(){
-        try{
-            DatagramSocket serverSocket = new DatagramSocket(peerPort);
-            byte[] recBuffer = new byte[1024];
-            DatagramPacket recPacket = new DatagramPacket(recBuffer, recBuffer.length);
-            System.out.println("Waiting for any messages");
-            serverSocket.receive(recPacket); //BLOCKING
-
-            byte[] sendBuf = new byte[1024];
-            sendBuf = "Im the server".getBytes();
-
-            InetAddress IPAddress = recPacket.getAddress();
-            int port = recPacket.getPort();
-
-            DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, IPAddress, port);
-
-            serverSocket.send(sendPacket);
-            System.out.println("Message sent by the server");
-        }
-        catch (Exception e) {
-            //TODO: handle exception
-        }
-        
     }
 
     public static void sendFileToPeer(String filename, String targetPeer) throws IOException{
