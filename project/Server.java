@@ -131,7 +131,7 @@ public class Server {
 
                     Message search_response = new Message();
                     search_response.request = "SEARCH_OK";
-                    search_response.peerList = peersWithfile;
+                    search_response.text = "Peers com arquivo solicitado:" + peersWithfile;
 
                     
                     System.out.println(gson.toJson(search_response));

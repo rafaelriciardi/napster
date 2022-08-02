@@ -7,5 +7,5 @@ public class Message {
     public String request;
     public String text;
     public String[] files;
-    public List<String> peerList = new ArrayList<String>();
+    //public List<String> peerList = new ArrayList<String>();
 }
