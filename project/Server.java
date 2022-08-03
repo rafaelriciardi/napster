@@ -22,7 +22,6 @@ public class Server {
             while (true){
                 byte[] recBuffer = new byte[1024];
                 DatagramPacket recPacket = new DatagramPacket(recBuffer, recBuffer.length);
-                System.out.println("Waiting for any messages");
                 serverSocket.receive(recPacket); //BLOCKING
                 InetAddress IPAddress = recPacket.getAddress();
                 int port = recPacket.getPort();
@@ -31,7 +30,6 @@ public class Server {
                 
                 Message message = gson.fromJson(json, Message.class);
                 String clientId = IPAddress+":"+port;
-                System.out.println(clientId+" - "+message.request);
 
                 if (message.request.equals("JOIN")){
                     threadJoin join = new threadJoin(message, peersInfo, clientId, serverSocket);
@@ -72,7 +70,6 @@ public class Server {
 
         public void run(){
             try {
-                System.out.println("Client Request - JOIN");
 
                 String[] targetParts = clientId.split(":");
                 String targetIP = targetParts[0];
@@ -95,10 +92,7 @@ public class Server {
                     }
                 }
 
-                System.out.println();
-                System.out.println("**** Peers Info ****");
-                System.out.println(peersInfo);
-                System.out.println();
+                System.out.println("Peer "+clientId+" adicionado com os arquivos "+concatFilenames(message.files));
 
                 String text = "Sou peer "+clientId+" com arquivos "+concatFilenames(message.files);
 
@@ -106,14 +100,12 @@ public class Server {
                 join_response.request = "JOIN_OK";
                 join_response.text = text;
                 
-                System.out.println(gson.toJson(join_response));
                 byte[] sendBuf = new byte[1024];
                 sendBuf = gson.toJson(join_response).getBytes();
 
                 DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, IPAddress, targetPort);
 
                 serverSocket.send(sendPacket);
-                System.out.println("Server Response - JOIN_OK");
             } catch (Exception e) {
                 System.out.println(e);
             }
@@ -136,7 +128,6 @@ public class Server {
 
         public void run(){
             try {
-            System.out.println("Client Request - LEAVE");
 
             String[] targetParts = clientId.split(":");
             String targetIP = targetParts[0];
@@ -161,22 +152,15 @@ public class Server {
                 }
             }
 
-            System.out.println();
-            System.out.println("**** Peers Info ****");
-            System.out.println(peersInfo);
-            System.out.println();
-
             Message leave_response = new Message();
             leave_response.request = "LEAVE_OK";
             
-            System.out.println(gson.toJson(leave_response));
             byte[] sendBuf = new byte[1024];
             sendBuf = gson.toJson(leave_response).getBytes();
 
             DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, IPAddress, targetPort);
 
             serverSocket.send(sendPacket);
-            System.out.println("Server Response - LEAVE_OK");
             } catch (Exception e) {
                 System.out.println(e);
             }
@@ -199,14 +183,13 @@ public class Server {
 
         public void run(){
             try {
-                System.out.println("Client Request - SEARCH");
+            String targetFile = message.text;
+            System.out.println("Peer "+clientId+" solicitou arquivo "+targetFile);
 
             String[] targetParts = clientId.split(":");
             String targetIP = targetParts[0];
             Integer targetPort = Integer.parseInt(targetParts[1]);
             InetAddress IPAddress = InetAddress.getByName(targetIP.substring(1));
- 
-            String targetFile = message.text;
 
             Set<String> peersSet = peersInfo.get(targetFile);
 
@@ -214,21 +197,16 @@ public class Server {
             if (peersSet != null)
                 peersWithfile.addAll(peersSet);
 
-            System.out.println(peersWithfile);
-
             Message search_response = new Message();
             search_response.request = "SEARCH_OK";
             search_response.text = "Peers com arquivo solicitado:" + peersWithfile;
 
-            
-            System.out.println(gson.toJson(search_response));
             byte[] sendBuf = new byte[1024];
             sendBuf = gson.toJson(search_response).getBytes();
 
             DatagramPacket sendPacket = new DatagramPacket(sendBuf, sendBuf.length, IPAddress, targetPort);
 
             serverSocket.send(sendPacket);
-            System.out.println("Server Response - SEARCH_OK");
             } catch (Exception e) {
                 System.out.println(e);
             }

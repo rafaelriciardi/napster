@@ -7,5 +7,6 @@ public class Message {
     public String request;
     public String text;
     public String[] files;
+    public int tcpPort;
     //public List<String> peerList = new ArrayList<String>();
 }
